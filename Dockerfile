@@ -16,6 +16,10 @@
 #
 FROM spark:3.5.6-scala2.12-java11-ubuntu
 
+# Accept architecture as a build argument
+ARG TARGETARCH="arm64"
+ENV TARGETARCH=${TARGETARCH}
+
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -121,12 +125,12 @@ RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
 # Apparently need a newer cmake
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-aarch64.sh && \
-    chmod +x cmake-3.28.3-linux-aarch64.sh
+RUN wget "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-$(uname -m).sh" && \
+    chmod +x "cmake-3.28.3-linux-$(uname -m).sh"
 
 # Install to /opt/cmake
 RUN mkdir /opt/cmake && \
-    ./cmake-3.28.3-linux-aarch64.sh --skip-license --prefix=/opt/cmake
+    ./cmake-3.28.3-linux-$(uname -m).sh --skip-license --prefix=/opt/cmake
 
 # Add to PATH
 ENV PATH=/opt/cmake/bin:$PATH
@@ -135,7 +139,7 @@ ENV PATH=/opt/cmake/bin:$PATH
 RUN /opt/cmake/bin/cmake --version
 
 # Set JAVA_HOME for RStudio 
-ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-arm64" 
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-$TARGETARCH" 
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
