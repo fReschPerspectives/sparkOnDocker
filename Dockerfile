@@ -157,6 +157,7 @@ RUN cd rstudio && \
     mkdir build && cd build && \
     /opt/cmake/bin/cmake -DRSTUDIO_TARGET=Server \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr/lib/rstudio-server \
         # -DBOOST_ROOT=/usr/local/boost \
         # -DBoost_NO_SYSTEM_PATHS=ON \
         # -DBoost_INCLUDE_DIR=/usr/local/boost/include \
@@ -173,5 +174,4 @@ RUN chmod +x /startup.sh
 EXPOSE 8787
 EXPOSE 8888
 
-USER spark
 CMD ["/startup.sh"]
