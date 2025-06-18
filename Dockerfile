@@ -147,7 +147,7 @@ RUN echo 'export PATH=$JAVA_HOME/bin:/opt/cmake/bin:$PATH' >> ~/.bashrc
 # Install modern Node.js (18.x)
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs
-    
+
 # Verify NODE installation
 RUN node --version
 
@@ -164,11 +164,14 @@ RUN cd rstudio && \
         .. && \
     make
 
-# Expose default RStudio Server port
+# Start RStudio Server
+# Create startup script
+COPY startup.sh /startup.sh
+RUN chmod +x /startup.sh
+
+# Expose default RStudio Server port and JupyterLab port
 EXPOSE 8787
 EXPOSE 8888
 
-# Start RStudio Server
-CMD ["/usr/lib/rstudio-server/bin/rserver", "--server-daemonize=0"]
-
 USER spark
+CMD ["/startup.sh"]
