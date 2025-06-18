@@ -22,16 +22,85 @@ ENV DEBIAN_FRONTEND=noninteractive
 USER root
 
 RUN set -ex; \
-    apt-get update; \
-    apt-get install -y python3 python3-pip; \
-    apt-get install -y r-base r-base-dev; \
-    apt-get install -y pandoc; \
+    apt-get update && \
+    apt-get install -y \
+        python3 \
+        python3-pip \
+        build-essential \
+        software-properties-common \
+        r-base \
+        r-base-core \
+        r-base-dev \
+        r-recommended \
+        cmake \
+        make \
+        ant \
+        lsb-release \
+        libpam0g-dev \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libsqlite3-dev \
+        libpq-dev \
+        libbz2-dev \
+        libzstd-dev \
+        libxml2-dev \
+        qtbase5-dev \
+        qttools5-dev \
+        qttools5-dev-tools \
+        libqt5websockets5-dev \
+        libgl1-mesa-dev \
+        protobuf-compiler \
+        libprotobuf-dev \
+        zlib1g-dev \
+        libedit-dev \
+        uuid-dev \
+        devscripts \
+        fakeroot \
+        git \
+        pandoc && \
     rm -rf /var/lib/apt/lists/*
+
+RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz && \
+    tar -xzf boost_1_87_0.tar.gz && \
+    cd boost_1_87_0 && \
+    ./bootstrap.sh && \
+    ./b2 --with=all --prefix=/usr/local/boost --build-dir=/tmp/ install && \
+    cd .. && \
+    rm -rf boost_1_87_0.tar.gz boost_1_87_0
+
+RUN export BOOST_ROOT=/usr/local/boost && \
+    export BOOST_INCLUDEDIR=/usr/local/boost/include && \
+    export BOOST_LIBRARYDIR=/usr/local/boost/lib
 
 ENV R_HOME=/usr/lib/R
 
+# Install Python dependencies
+RUN pip3 install --no-cache-dir \
+    pyspark==3.5.6 \
+    findspark \
+    pandas \
+    numpy \
+    matplotlib \
+    seaborn \
+    scikit-learn \
+    jupyter \
+    jupyterlab \
+    ipykernel \
+    && python3 -m ipykernel install --user --name=spark-py3
+
 # Install sparklyr and dependencies in R
-RUN R -e "install.packages(c('sparklyr', 'tidyverse'), repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages(c('remotes'))" && \
+    R -e 'remotes::install_version("cpp11", version = "0.5.0", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("purrr", version = "1.0.2", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("tzdb", version = "0.4.0", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("gtable", version = "0.3.5", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("scales", version = "1.3.0", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("tidyr", version = "1.3.0", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("readr", version = "2.1.5", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("tidyverse", version = "1.3.1", repos = "https://cran.r-project.org")' && \
+    R -e 'remotes::install_version("sparklyr", version = "1.8.0", repos = "https://cran.r-project.org")'
 
 # Create a user for RStudio
 RUN useradd -ms /bin/bash rstudio \
@@ -39,12 +108,65 @@ RUN useradd -ms /bin/bash rstudio \
     && adduser rstudio sudo
 
 # Download and install RStudio Server
-RUN wget https://download2.rstudio.org/server/jammy/amd64/rstudio-server-2023.06.2-561-amd64.deb && \
-    gdebi --non-interactive rstudio-server-2023.06.2-561-amd64.deb && \
-    rm rstudio-server-2023.06.2-561-amd64.deb
+RUN git clone https://github.com/rstudio/rstudio.git && \
+    cd rstudio && \
+    git submodule update --init --recursive 
+    
+# Verify the dependencies location and run the build
+RUN cd rstudio/dependencies/linux && \
+    cp install-dependencies-focal install-dependencies_focal_alt && \
+    sed -i 's/sudo //g' install-dependencies_focal_alt 
+
+RUN cd rstudio/dependencies/linux && \
+    ./install-dependencies_focal_alt
+
+# Apparently need a newer cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-aarch64.sh && \
+    chmod +x cmake-3.28.3-linux-aarch64.sh
+
+# Install to /opt/cmake
+RUN mkdir /opt/cmake && \
+    ./cmake-3.28.3-linux-aarch64.sh --skip-license --prefix=/opt/cmake
+
+# Add to PATH
+ENV PATH=/opt/cmake/bin:$PATH
+
+# Verify CMake installation
+RUN /opt/cmake/bin/cmake --version
+
+# Set JAVA_HOME for RStudio 
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-arm64" 
+ENV PATH="$JAVA_HOME/bin:$PATH"
+RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+
+# Verify JAVA_HOME
+RUN echo $JAVA_HOME
+RUN echo $PATH
+RUN echo 'export PATH=$JAVA_HOME/bin:/opt/cmake/bin:$PATH' >> ~/.bashrc
+
+# Install modern Node.js (18.x)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+    
+# Verify NODE installation
+RUN node --version
+
+# Build RStudio Server
+# Note: This step can take a while depending on the system
+RUN cd rstudio && \
+    mkdir build && cd build && \
+    /opt/cmake/bin/cmake -DRSTUDIO_TARGET=Server \
+        -DCMAKE_BUILD_TYPE=Release \
+        # -DBOOST_ROOT=/usr/local/boost \
+        # -DBoost_NO_SYSTEM_PATHS=ON \
+        # -DBoost_INCLUDE_DIR=/usr/local/boost/include \
+        # -DBoost_LIBRARY_DIR=/usr/local/boost/lib \
+        .. && \
+    make
 
 # Expose default RStudio Server port
 EXPOSE 8787
+EXPOSE 8888
 
 # Start RStudio Server
 CMD ["/usr/lib/rstudio-server/bin/rserver", "--server-daemonize=0"]
