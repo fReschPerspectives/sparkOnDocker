@@ -163,7 +163,8 @@ RUN cd rstudio && \
         # -DBoost_INCLUDE_DIR=/usr/local/boost/include \
         # -DBoost_LIBRARY_DIR=/usr/local/boost/lib \
         .. && \
-    make
+    make && \
+    make install
 
 # Start RStudio Server
 # Create startup script
