@@ -164,6 +164,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 RUN readlink -f $(which javac)
+ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-$arch"
+ENV PATH="$JAVA_HOME/bin:$PATH"
+RUN  echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
 # Build RStudio Server
 # Note: This step can take a while depending on the system
