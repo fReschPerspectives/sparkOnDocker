@@ -152,8 +152,17 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
-ENV JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-amd64" 
-RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+# Fix JAVA_HOME for RStudio
+# Remove OpenJDK 17 and install OpenJDK 11
+# This is necessary because RStudio Server requires OpenJDK 11
+RUN apt-get remove openjdk-17-jdk -y && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 RUN readlink -f $(which javac)
 
 # Build RStudio Server
