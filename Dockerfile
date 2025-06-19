@@ -153,6 +153,7 @@ RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
 
+RUN apt-get install -y openjdk-11-jdk-headless    
 RUN readlink -f $(which javac)
 ENV JAVA_HOME="/opt/java/openjdk-11-openjdk-$arch" 
 RUN export JAVA_HOME="JAVA_HOME"
