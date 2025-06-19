@@ -134,7 +134,7 @@ RUN R -e "install.packages(c('remotes'))" && \
 RUN if [ "$arch" = "arm64" ]; then \
     git clone https://github.com/rstudio/rstudio.git && \
     cd rstudio && \
-    git submodule update --init --recursive \
+    git submodule update --init --recursive; \
     fi
     
 # Verify the dependencies location and run the build
@@ -146,7 +146,7 @@ RUN if [ "$arch" = "arm64" ]; then \
 
 RUN if [ "$arch" = "arm64" ]; then \
     cd rstudio/dependencies/linux && \
-    ./install-dependencies_focal_alt \
+    ./install-dependencies_focal_alt; \
     fi 
 
     # Build RStudio Server
