@@ -153,8 +153,8 @@ RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
 
-RUN readlink -f $(which java)
-ENV JAVA_HOME="/opt/java/openjdk" 
+RUN readlink -f $(which javac)
+ENV JAVA_HOME="/opt/java/openjdk-${JAVA_VERSION}-openjdk-$arch" 
 RUN export JAVA_HOME="JAVA_HOME"
 
 # Build RStudio Server
