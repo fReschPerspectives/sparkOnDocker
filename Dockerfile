@@ -152,8 +152,6 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
-
-RUN update-java-alternatives --list   
 RUN update-alternatives --set java /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java && \
     update-alternatives --set javac /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/javac
 RUN readlink -f $(which javac)
