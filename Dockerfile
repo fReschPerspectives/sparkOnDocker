@@ -152,6 +152,9 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
+
+RUN readlink -f $(which java)
+
 # Build RStudio Server
 # Note: This step can take a while depending on the system
 RUN cd rstudio && \
