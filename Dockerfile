@@ -162,7 +162,7 @@ RUN if [ "$arch" = "arm64" ]; then \
     make install; \
     fi
 
-RUN if [ "$arch" == "amd64" ]; then \
+RUN if [ "$arch" = "amd64" ]; then \
     apt-get install gdebi && \
     wget https://rstudio.org/download/latest/stable/server/focal/rstudio-server-latest-amd64.deb && \
     gdebi -n rstudio-server-latest-amd64.deb && \
