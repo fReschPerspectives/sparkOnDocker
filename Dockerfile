@@ -18,6 +18,9 @@ FROM spark:3.5.6-scala2.12-java11-ubuntu
 
 USER root
 
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Accept architecture as a build argument
 ARG TARGETARCH="arm64"
 ENV arch=${TARGETARCH}
@@ -103,8 +106,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 # Verify NODE installation
 RUN node --version
 
-# Prevent interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
 
 ENV R_HOME=/usr/lib/R
 
