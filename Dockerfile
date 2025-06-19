@@ -131,27 +131,27 @@ RUN R -e "install.packages(c('remotes'))" && \
     R -e 'remotes::install_version("sparklyr", version = "1.8.0", repos = "https://cran.r-project.org")'
 
 # Download and install RStudio Server
-RUN if [[ "$arch" == "arm64" ]]; then \
+RUN if [ "$arch" = "arm64" ]; then \
     git clone https://github.com/rstudio/rstudio.git && \
     cd rstudio && \
-    git submodule update --init --recursive && \
+    git submodule update --init --recursive \
     fi
     
 # Verify the dependencies location and run the build
-RUN if [[ "$arch" == "arm64" ]]; then \
+RUN if [ "$arch" = "arm64" ]; then \
     cd rstudio/dependencies/linux && \
     cp install-dependencies-focal install-dependencies_focal_alt && \
-    sed -i 's/sudo //g' install-dependencies_focal_alt; && \
+    sed -i 's/sudo //g' install-dependencies_focal_alt; \
     fi 
 
-RUN if [[ "$arch" == "arm64" ]]; then \
+RUN if [ "$arch" = "arm64" ]; then \
     cd rstudio/dependencies/linux && \
-    ./install-dependencies_focal_alt && \
+    ./install-dependencies_focal_alt \
     fi 
 
     # Build RStudio Server
 # Note: This step can take a while depending on the system
-RUN if [[ "$arch" == "arm64" ]]; then \
+RUN if [ "$arch" = "arm64" ]; then \
     cd rstudio && \
     mkdir build && cd build && \
     /opt/cmake/bin/cmake -DRSTUDIO_TARGET=Server \
@@ -159,10 +159,10 @@ RUN if [[ "$arch" == "arm64" ]]; then \
         -DCMAKE_INSTALL_PREFIX=/usr/lib/rstudio-server \
         .. && \
     make && \
-    make install; && \
+    make install; \
     fi
 
-RUN if [[ "$arch" == "amd64" ]]; then \
+RUN if [ "$arch" == "amd64" ]; then \
     apt-get install gdebi && \
     wget https://rstudio.org/download/latest/stable/server/focal/rstudio-server-latest-amd64.deb && \
     gdebi -n rstudio-server-latest-amd64.deb && \
