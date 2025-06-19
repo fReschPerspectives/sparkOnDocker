@@ -162,9 +162,9 @@ RUN if [[ "$arch" == "arm64" ]]; then \
 
 RUN if [[ "$arch" == "amd64" ]]; then \
     apt-get install gdebi && \
-    wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2023.09.0-386-amd64.deb && \
-    gdebi -n rstudio-server-2023.09.0-386-amd64.deb && \
-    rm rstudio-server-2023.09.0-386-amd64.deb; \
+    wget https://rstudio.org/download/latest/stable/server/focal/rstudio-server-latest-amd64.deb && \
+    gdebi -n rstudio-server-latest-amd64.deb && \
+    rm rstudio-server-latest-amd64.deb; \
     fi
 
 # Create a user for RStudio
