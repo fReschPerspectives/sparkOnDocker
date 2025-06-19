@@ -25,8 +25,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH="arm64"
 ENV arch=${TARGETARCH}
 
-ARG JAVA_VERSION="17"
-ENV JAVA_VERSION=${JAVA_VERSION}
 
 # Get needed dependencies
 RUN set -ex; \
@@ -43,7 +41,6 @@ RUN set -ex; \
         cmake \
         make \
         ant \
-        openjdk-11-jdk \
         openjdk-17-jdk \
         lsb-release \
         libpam0g-dev \
@@ -87,7 +84,7 @@ ENV PATH=/opt/cmake/bin:$PATH
 RUN /opt/cmake/bin/cmake --version
 
 # Set JAVA_HOME for RStudio 
-ENV JAVA_HOME="/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-$arch" 
+ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-$arch" 
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
@@ -105,7 +102,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
 
 # Verify NODE installation
 RUN node --version
-
 
 ENV R_HOME=/usr/lib/R
 
@@ -152,25 +148,7 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
-# Fix JAVA_HOME for RStudio
-# Remove OpenJDK 17 and install OpenJDK 11
-# This is necessary because RStudio Server requires OpenJDK 11
-RUN apt-get remove openjdk-17-jdk -y && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-RUN readlink -f $(which javac)
-ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-$arch"
-ENV PATH="$JAVA_HOME/bin:$PATH"
-RUN  echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
-ENV JAVA_OPTS="--release 11"
-RUN export JAVA_OPTS="--release 11"
-
-# Build RStudio Server
+    # Build RStudio Server
 # Note: This step can take a while depending on the system
 RUN cd rstudio && \
     mkdir build && cd build && \
