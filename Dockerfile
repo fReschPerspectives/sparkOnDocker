@@ -16,6 +16,8 @@
 #
 FROM spark:3.5.6-scala2.12-java11-ubuntu
 
+USER root
+
 # Accept architecture as a build argument
 ARG TARGETARCH="arm64"
 ENV arch=${TARGETARCH}
@@ -100,8 +102,6 @@ RUN node --version
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
-
-USER root
 
 ENV R_HOME=/usr/lib/R
 
