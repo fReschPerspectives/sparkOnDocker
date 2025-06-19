@@ -20,6 +20,9 @@ FROM spark:3.5.6-scala2.12-java11-ubuntu
 ARG TARGETARCH="arm64"
 ENV arch=${TARGETARCH}
 
+ARG JAVA_VERSION="17"
+ENV JAVA_VERSION=${JAVA_VERSION}
+
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -39,6 +42,7 @@ RUN set -ex; \
         cmake \
         make \
         ant \
+        openjdk-11-jdk \
         openjdk-17-jdk \
         lsb-release \
         libpam0g-dev \
@@ -140,7 +144,7 @@ ENV PATH=/opt/cmake/bin:$PATH
 RUN /opt/cmake/bin/cmake --version
 
 # Set JAVA_HOME for RStudio 
-ENV JAVA_HOME="/usr/lib/jvm/java-17-openjdk-$arch" 
+ENV JAVA_HOME="/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-$arch" 
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
