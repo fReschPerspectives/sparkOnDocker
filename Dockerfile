@@ -167,6 +167,8 @@ RUN readlink -f $(which javac)
 ENV JAVA_HOME="/usr/lib/jvm/java-11-openjdk-$arch"
 ENV PATH="$JAVA_HOME/bin:$PATH"
 RUN  echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+ENV JAVA_OPTS="--release 11"
+RUN export JAVA_OPTS=$JAVA_OPTS
 
 # Build RStudio Server
 # Note: This step can take a while depending on the system
