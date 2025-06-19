@@ -23,11 +23,7 @@ ENV arch=${TARGETARCH}
 ARG JAVA_VERSION="17"
 ENV JAVA_VERSION=${JAVA_VERSION}
 
-# Prevent interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-
-USER root
-
+# Get needed dependencies
 RUN set -ex; \
     apt-get update && \
     apt-get install -y \
@@ -71,17 +67,41 @@ RUN set -ex; \
         pandoc && \
     rm -rf /var/lib/apt/lists/*
 
-RUN wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz && \
-    tar -xzf boost_1_87_0.tar.gz && \
-    cd boost_1_87_0 && \
-    ./bootstrap.sh && \
-    ./b2 --with=all --prefix=/usr/local/boost --build-dir=/tmp/ install && \
-    cd .. && \
-    rm -rf boost_1_87_0.tar.gz boost_1_87_0
+# Apparently need a newer cmake
+RUN wget "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-$(uname -m).sh" && \
+    chmod +x "cmake-3.28.3-linux-$(uname -m).sh"
 
-RUN export BOOST_ROOT=/usr/local/boost && \
-    export BOOST_INCLUDEDIR=/usr/local/boost/include && \
-    export BOOST_LIBRARYDIR=/usr/local/boost/lib
+# Install to /opt/cmake
+RUN mkdir /opt/cmake && \
+    ./cmake-3.28.3-linux-$(uname -m).sh --skip-license --prefix=/opt/cmake
+
+# Add to PATH
+ENV PATH=/opt/cmake/bin:$PATH
+
+# Verify CMake installation
+RUN /opt/cmake/bin/cmake --version
+
+# Set JAVA_HOME for RStudio 
+ENV JAVA_HOME="/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-$arch" 
+ENV PATH="$JAVA_HOME/bin:$PATH"
+RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+
+# Verify JAVA_HOME
+RUN echo $JAVA_HOME
+RUN echo $PATH
+RUN echo 'export PATH=$PATH' >> ~/.bashrc
+
+# Install modern Node.js (18.x)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Verify NODE installation
+RUN node --version
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+USER root
 
 ENV R_HOME=/usr/lib/R
 
@@ -94,7 +114,6 @@ RUN pip3 install --no-cache-dir \
     matplotlib \
     seaborn \
     scikit-learn \
-    jupyter \
     jupyterlab \
     ipykernel \
     && python3 -m ipykernel install --user --name=spark-py3
@@ -129,37 +148,6 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
-# Apparently need a newer cmake
-RUN wget "https://github.com/Kitware/CMake/releases/download/v3.28.3/cmake-3.28.3-linux-$(uname -m).sh" && \
-    chmod +x "cmake-3.28.3-linux-$(uname -m).sh"
-
-# Install to /opt/cmake
-RUN mkdir /opt/cmake && \
-    ./cmake-3.28.3-linux-$(uname -m).sh --skip-license --prefix=/opt/cmake
-
-# Add to PATH
-ENV PATH=/opt/cmake/bin:$PATH
-
-# Verify CMake installation
-RUN /opt/cmake/bin/cmake --version
-
-# Set JAVA_HOME for RStudio 
-ENV JAVA_HOME="/usr/lib/jvm/java-${JAVA_VERSION}-openjdk-$arch" 
-ENV PATH="$JAVA_HOME/bin:$PATH"
-RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
-
-# Verify JAVA_HOME
-RUN echo $JAVA_HOME
-RUN echo $PATH
-RUN echo 'export PATH=$JAVA_HOME/bin:/opt/cmake/bin:$PATH' >> ~/.bashrc
-
-# Install modern Node.js (18.x)
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
-
-# Verify NODE installation
-RUN node --version
-
 # Build RStudio Server
 # Note: This step can take a while depending on the system
 RUN cd rstudio && \
@@ -167,10 +155,6 @@ RUN cd rstudio && \
     /opt/cmake/bin/cmake -DRSTUDIO_TARGET=Server \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr/lib/rstudio-server \
-        # -DBOOST_ROOT=/usr/local/boost \
-        # -DBoost_NO_SYSTEM_PATHS=ON \
-        # -DBoost_INCLUDE_DIR=/usr/local/boost/include \
-        # -DBoost_LIBRARY_DIR=/usr/local/boost/lib \
         .. && \
     make && \
     make install
