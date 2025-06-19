@@ -154,9 +154,11 @@ RUN cd rstudio/dependencies/linux && \
 
 
 RUN update-java-alternatives --list   
+RUN update-alternatives --set java /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java && \
+    update-alternatives --set javac /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/javac
 RUN readlink -f $(which javac)
-ENV JAVA_HOME="/opt/java/openjdk-11-openjdk-$arch" 
-RUN export JAVA_HOME="JAVA_HOME"
+ENV JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-amd64" 
+RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
 # Build RStudio Server
 # Note: This step can take a while depending on the system
