@@ -90,6 +90,9 @@ RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
 
 # Verify JAVA_HOME
 RUN echo $JAVA_HOME
+RUN java -version
+
+# Set PATH for R and Python
 RUN echo $PATH
 RUN echo 'export PATH=$PATH' >> ~/.bashrc
 
