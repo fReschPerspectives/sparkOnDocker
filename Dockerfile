@@ -154,7 +154,7 @@ RUN cd rstudio/dependencies/linux && \
 
 
 RUN readlink -f $(which java)
-ENV JAVA_HOME="/opt/java/openjdk/bin/java" 
+ENV JAVA_HOME="/opt/java/openjdk" 
 RUN export JAVA_HOME="JAVA_HOME"
 
 # Build RStudio Server
