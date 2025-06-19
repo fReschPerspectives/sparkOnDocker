@@ -152,11 +152,9 @@ RUN cd rstudio/dependencies/linux && \
 RUN cd rstudio/dependencies/linux && \
     ./install-dependencies_focal_alt
 
-RUN update-alternatives --set java /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/java && \
-    update-alternatives --set javac /usr/lib/jvm/java-1.11.0-openjdk-amd64/bin/javac
-RUN readlink -f $(which javac)
 ENV JAVA_HOME="/usr/lib/jvm/java-1.11.0-openjdk-amd64" 
 RUN echo "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+RUN readlink -f $(which javac)
 
 # Build RStudio Server
 # Note: This step can take a while depending on the system
