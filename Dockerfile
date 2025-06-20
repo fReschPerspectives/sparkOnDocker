@@ -174,6 +174,26 @@ RUN useradd -ms /bin/bash rstudio \
     && echo "rstudio:rstudio" | chpasswd \
     && adduser rstudio sudo
 
+# Remove git pull of rstudio as it is no longer needed
+RUN if [ "$arch" = "arm64" ]; then \
+    rm -rf rstudio; \
+    fi;
+
+# Install AWS CLI    
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install;
+
+# Grab AWS Session Manager plugin
+RUN if [ "$arch" = "arm64" ]; then \
+    curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb" -o "session-manager-plugin.deb"; \
+    else \
+    curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"; \
+    fi; 
+
+RUN dpkg -i session-manager-plugin.deb && \
+    rm session-manager-plugin.deb;
+
 # Start RStudio Server
 # Create startup script
 COPY startup.sh /startup.sh
