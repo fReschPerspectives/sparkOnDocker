@@ -199,6 +199,11 @@ RUN dpkg -i session-manager-plugin.deb && \
 COPY startup.sh /startup.sh
 RUN chmod +x /startup.sh
 
+# Some simple cleanup of unnecessary files
+RUN rm awscliv2.zip && \
+    rm -rf aws && \
+    rm cmake-3.28.3-linux-$(uname -m).sh
+
 # Expose default RStudio Server port and JupyterLab port
 EXPOSE 8787
 EXPOSE 8888
