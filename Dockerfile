@@ -208,4 +208,5 @@ RUN rm awscliv2.zip && \
 EXPOSE 8787
 EXPOSE 8888
 
+ENTRYPOINT [ "/bin/bash" ]
 CMD ["/startup.sh"]
