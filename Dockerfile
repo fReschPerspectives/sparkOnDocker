@@ -131,7 +131,7 @@ RUN R -e "install.packages(c('remotes'))" && \
     R -e 'remotes::install_version("sparklyr", version = "1.8.6", repos = "https://cran.r-project.org")'
 
 # Set SPARK_HOME environment variable   
-ENV SPARK_HOME=/usr/local/
+ENV SPARK_HOME=/opt/spark
 
 # Download and install RStudio Server
 RUN if [ "$arch" = "arm64" ]; then \
