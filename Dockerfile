@@ -128,7 +128,7 @@ RUN R -e "install.packages(c('remotes'))" && \
     R -e 'remotes::install_version("tidyr", version = "1.3.0", repos = "https://cran.r-project.org")' && \
     R -e 'remotes::install_version("readr", version = "2.1.5", repos = "https://cran.r-project.org")' && \
     R -e 'remotes::install_version("tidyverse", version = "1.3.1", repos = "https://cran.r-project.org")' && \
-    R -e 'remotes::install_version("sparklyr", version = "1.8.0", repos = "https://cran.r-project.org")'
+    R -e 'remotes::install_version("sparklyr", version = "1.8.6", repos = "https://cran.r-project.org")'
 
 # Download and install RStudio Server
 RUN if [ "$arch" = "arm64" ]; then \
